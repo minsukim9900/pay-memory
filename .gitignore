@@ -1,0 +1,133 @@
+################################
+# OS
+################################
+.DS_Store
+Thumbs.db
+
+################################
+# IDE / Editor
+################################
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+################################
+# Logs
+################################
+logs/
+*.log
+*.out
+
+################################
+# Environment
+################################
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+################################
+# Backend - Spring Boot / Gradle
+################################
+backend/.gradle/
+backend/build/
+backend/out/
+
+backend/**/.gradle/
+backend/**/build/
+backend/**/out/
+
+# Keep Gradle wrapper
+!backend/gradle/wrapper/gradle-wrapper.jar
+!backend/**/gradle/wrapper/gradle-wrapper.jar
+
+# QueryDSL generated files
+backend/src/main/generated/
+backend/**/src/main/generated/
+
+# Local application configs
+backend/src/main/resources/application-local.yml
+backend/src/main/resources/application-dev.yml
+backend/src/main/resources/application-prod.yml
+backend/**/src/main/resources/application-local.yml
+backend/**/src/main/resources/application-dev.yml
+backend/**/src/main/resources/application-prod.yml
+
+# External runtime configs
+backend/runtime/
+backend/**/runtime/
+backend/config/*.yml
+backend/**/config/*.yml
+
+################################
+# Frontend - React / Next.js / Vue / Vite
+################################
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.nuxt/
+frontend/coverage/
+frontend/storybook-static/
+
+frontend/**/node_modules/
+frontend/**/dist/
+frontend/**/build/
+frontend/**/.next/
+frontend/**/.nuxt/
+frontend/**/coverage/
+frontend/**/storybook-static/
+
+################################
+# Node / Package Managers
+################################
+node_modules/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+################################
+# Docker
+################################
+docker-compose.override.yml
+*.pid
+
+################################
+# Database Volumes
+################################
+postgres-data/
+postgres-test-data/
+mysql-data/
+mariadb-data/
+
+################################
+# Redis
+################################
+dump.rdb
+
+################################
+# File Upload / Temporary Files
+################################
+uploads/
+tmp/
+temp/
+
+backend/uploads/
+backend/tmp/
+backend/temp/
+
+################################
+# Test / Coverage
+################################
+coverage/
+.nyc_output/
+
+################################
+# Misc
+################################
+*.swp
+*.swo

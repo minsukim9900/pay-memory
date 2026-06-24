@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import site.paymemory.global.exception.ErrorCode;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.*;
@@ -52,6 +53,14 @@ public class ResponseBody<T> {
                 .statusCode(errorCode.getStatus().value())
                 .message(message)
                 .errorCode(errorCode.getCode())
+                .build();
+    }
+
+    public static ResponseBody<Void> error(HttpStatusCode status, String message) {
+        return ResponseBody.<Void>builder()
+                .statusCode(status.value())
+                .message(message)
+                .errorCode(status.value())
                 .build();
     }
 }

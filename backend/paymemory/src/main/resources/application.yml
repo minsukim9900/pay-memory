@@ -1,0 +1,41 @@
+spring:
+  config:
+    import:
+      - optional:file:.env[.properties]
+  application:
+    name: pay-memory
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:pay_memory}
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:1234}
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 3000ms
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    properties:
+      hibernate:
+        show_sql: false
+        format_sql: true
+        use_sql_comments: false
+        highlight_sql: true
+        jdbc:
+          time_zone: UTC
+    open-in-view: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+jwt:
+  key: ${JWT_SECRET:local-jwt-secret-key-local-jwt-secret-key}
+  access-token-name: ACCESS_TOKEN
+  access-token-ttl: ${JWT_ACCESS_TOKEN_EXPIRE:3600000}
+  refresh-token-name: REFRESH_TOKEN
+  refresh-token-ttl: ${JWT_REFRESH_TOKEN_EXPIRE:1209600000}

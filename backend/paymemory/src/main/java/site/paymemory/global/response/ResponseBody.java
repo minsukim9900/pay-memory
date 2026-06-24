@@ -46,4 +46,12 @@ public class ResponseBody<T> {
                 .errorCode(errorCode.getCode())
                 .build();
     }
+
+    public static ResponseBody<Void> error(ErrorCode errorCode, String message) {
+        return ResponseBody.<Void>builder()
+                .statusCode(errorCode.getStatus().value())
+                .message(message)
+                .errorCode(errorCode.getCode())
+                .build();
+    }
 }

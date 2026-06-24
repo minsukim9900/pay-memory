@@ -1,5 +1,9 @@
 package site.paymemory.global.util;
 
+import site.paymemory.global.exception.CommonErrorCode;
+import site.paymemory.global.exception.GlobalException;
+
+import java.time.DateTimeException;
 import java.time.ZoneId;
 
 public final class TimeZoneUtils {
@@ -10,14 +14,13 @@ public final class TimeZoneUtils {
     }
 
     public static ZoneId parseZoneId(String timeZone) {
-        try {
-            if (timeZone == null || timeZone.isBlank()) {
-                return DEFAULT_ZONE_ID;
-            }
-
-            return ZoneId.of(timeZone);
-        } catch (Exception e) {
+        if (timeZone == null || timeZone.isBlank()) {
             return DEFAULT_ZONE_ID;
+        }
+        try {
+            return ZoneId.of(timeZone);
+        } catch (DateTimeException e) {
+            throw new GlobalException(CommonErrorCode.INVALID_TIME_ZONE);
         }
     }
 }

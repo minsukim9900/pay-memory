@@ -17,6 +17,9 @@ spring:
       port: ${REDIS_PORT:6379}
       timeout: 3000ms
 
+    mongodb:
+      uri: mongodb://${MONGODB_USERNAME:admin}:${MONGODB_PASSWORD:mongodb_password}@${MONGODB_HOST:localhost}:${MONGODB_PORT:27017}/${MONGODB_DATABASE:paymemory}?authSource=${MONGODB_AUTH_DATABASE:admin}
+
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}

@@ -24,6 +24,8 @@ public class TransactionCategory {
 
     @Builder(access = PRIVATE)
     private TransactionCategory(String name) {
+        validateName(name);
+
         this.name = name;
     }
 
@@ -33,5 +35,11 @@ public class TransactionCategory {
                 .builder()
                 .name(name)
                 .build();
+    }
+
+    private void validateName(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("거래 카테고리명은 필수입니다.");
+        }
     }
 }

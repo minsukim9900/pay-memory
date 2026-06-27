@@ -40,14 +40,14 @@ public class PaymentTransaction extends BaseTimeEntity {
     private String merchantName;
 
     @Column(name = "amount", nullable = false)
-    private Long amount;
+    private long amount;
 
     @Enumerated(STRING)
     @Column(name = "transaction_type", nullable = false, length = 20)
     private TransactionType transactionType;
 
     @Column(name = "included_in_spending", nullable = false)
-    private Boolean includedInSpending;
+    private boolean includedInSpending;
 
     @Column(name = "memo", length = 500)
     private String memo;
@@ -64,9 +64,9 @@ public class PaymentTransaction extends BaseTimeEntity {
             TransactionCategory transactionCategory,
             Instant transactionAt,
             String merchantName,
-            Long amount,
+            long amount,
             TransactionType transactionType,
-            Boolean includedInSpending,
+            boolean includedInSpending,
             String memo
     ) {
         this.user = user;
@@ -84,9 +84,9 @@ public class PaymentTransaction extends BaseTimeEntity {
             TransactionCategory transactionCategory,
             Instant transactionAt,
             String merchantName,
-            Long amount,
+            long amount,
             TransactionType transactionType,
-            Boolean includedInSpending,
+            boolean includedInSpending,
             String memo
     ) {
 
@@ -107,9 +107,9 @@ public class PaymentTransaction extends BaseTimeEntity {
             TransactionCategory transactionCategory,
             Instant transactionAt,
             String merchantName,
-            Long amount,
+            long amount,
             TransactionType transactionType,
-            Boolean includedInSpending,
+            boolean includedInSpending,
             String memo
     ) {
         this.transactionCategory = transactionCategory;

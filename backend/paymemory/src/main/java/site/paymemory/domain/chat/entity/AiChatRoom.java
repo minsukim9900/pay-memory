@@ -8,6 +8,7 @@ import site.paymemory.domain.user.entity.User;
 import site.paymemory.global.entity.BaseTimeEntity;
 
 import java.time.Instant;
+import java.util.Objects;
 
 import static jakarta.persistence.FetchType.*;
 import static jakarta.persistence.GenerationType.*;
@@ -36,6 +37,8 @@ public class AiChatRoom extends BaseTimeEntity {
 
     @Builder(access = PRIVATE)
     private AiChatRoom(User user, String title) {
+        validateRequiredFields(user, title);
+
         this.user = user;
         this.title = title;
     }
@@ -50,10 +53,23 @@ public class AiChatRoom extends BaseTimeEntity {
     }
 
     public void updateTitle(String title) {
+        validateTitle(title);
+
         this.title = title;
     }
 
     public void delete() {
         this.deletedAt = Instant.now();
+    }
+
+    private void validateRequiredFields(User user, String title) {
+        Objects.requireNonNull(user, "사용자는 필수입니다.");
+        validateTitle(title);
+    }
+
+    private void validateTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("AI 채팅방 제목은 필수입니다.");
+        }
     }
 }

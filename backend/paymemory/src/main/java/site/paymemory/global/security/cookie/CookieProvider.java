@@ -32,7 +32,7 @@ public class CookieProvider {
                 .sameSite("None")
                 .domain(cookieDomain)
                 .path("/")
-                .maxAge(accessTokenTtl / 1000)
+                .maxAge(accessTokenTtl)
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());

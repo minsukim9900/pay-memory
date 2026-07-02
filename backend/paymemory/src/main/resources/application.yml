@@ -63,9 +63,9 @@ server:
 jwt:
   key: ${JWT_SECRET:local-jwt-secret-key-local-jwt-secret-key}
   access-token-name: ${JWT_ACCESS_TOKEN_NAME:ACCESS_TOKEN}
-  access-token-ttl: ${JWT_ACCESS_TOKEN_EXPIRE:3600000}
+  access-token-ttl: ${JWT_ACCESS_TOKEN_EXPIRE:3600}
   refresh-token-name: ${JWT_REFRESH_TOKEN_NAME:REFRESH_TOKEN}
-  refresh-token-ttl: ${JWT_REFRESH_TOKEN_EXPIRE:1209600000}
+  refresh-token-ttl: ${JWT_REFRESH_TOKEN_EXPIRE:1209600}
 
 cookie:
   domain: ${COOKIE_DOMAIN:paymemory.site}

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import site.paymemory.global.security.cookie.CookieProvider;
 import site.paymemory.global.security.jwt.TokenProvider;
 import site.paymemory.global.security.oauth.CustomOAuth2User;
+import site.paymemory.global.security.provider.RefreshTokenProvider;
+import site.paymemory.global.security.repository.RefreshTokenRedisRepository;
 
 import java.io.IOException;
 
@@ -19,6 +21,8 @@ import java.io.IOException;
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
     private final TokenProvider tokenProvider;
+    private final RefreshTokenProvider refreshTokenProvider;
+    private final RefreshTokenRedisRepository refreshTokenRedisRepository;
     private final CookieProvider cookieProvider;
 
     @Value("${oauth2.success-redirect-url}")
@@ -33,9 +37,15 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
-        String accessToken = tokenProvider.generateAccessToken(customOAuth2User.getUserId());
+        Long userId = customOAuth2User.getUserId();
+        String accessToken = tokenProvider.generateAccessToken(userId);
+        String refreshToken = refreshTokenProvider.generateRefreshToken();
+        String hashedRefreshToken = refreshTokenProvider.hashRefreshToken(refreshToken);
+
+        refreshTokenRedisRepository.saveRefreshToken(hashedRefreshToken, userId);
 
         cookieProvider.addAccessTokenCookie(response, accessToken);
+        cookieProvider.addRefreshTokenCookie(response, refreshToken);
 
         response.sendRedirect(successRedirectUrl);
     }

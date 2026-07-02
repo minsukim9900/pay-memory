@@ -9,10 +9,12 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import site.paymemory.global.security.cookie.CookieProvider;
 import site.paymemory.global.security.filter.JwtAuthenticationFilter;
 import site.paymemory.global.security.handler.CustomAccessDeniedHandler;
 import site.paymemory.global.security.handler.CustomAuthenticationEntryPoint;
 import site.paymemory.global.security.handler.CustomOAuth2SuccessHandler;
+import site.paymemory.global.security.jwt.TokenProvider;
 import site.paymemory.global.security.service.CustomOAuth2UserService;
 
 @Configuration
@@ -22,9 +24,10 @@ public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final CookieProvider cookieProvider;
+    private final TokenProvider tokenProvider;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -55,7 +58,8 @@ public class SecurityConfig {
                         )
                         .successHandler(customOAuth2SuccessHandler)
                 )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(cookieProvider, tokenProvider),
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 }

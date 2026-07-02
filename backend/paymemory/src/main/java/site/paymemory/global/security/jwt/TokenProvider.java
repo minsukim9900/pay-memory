@@ -28,7 +28,7 @@ public class TokenProvider {
     public String generateAccessToken(Long userId) {
 
         Instant now = Instant.now();
-        Instant expiration = now.plusMillis(accessTokenTtl);
+        Instant expiration = now.plusSeconds(accessTokenTtl);
 
         return Jwts
                 .builder()

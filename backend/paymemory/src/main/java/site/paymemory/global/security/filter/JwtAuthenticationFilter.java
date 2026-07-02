@@ -9,6 +9,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import site.paymemory.global.exception.GlobalException;
 import site.paymemory.global.security.cookie.CookieProvider;
 import site.paymemory.global.security.jwt.TokenProvider;
 
@@ -29,8 +30,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        cookieProvider.getAccessToken(request)
-                .ifPresent(accessToken -> authenticate(accessToken));
+        try {
+            cookieProvider.getAccessToken(request)
+                    .ifPresent(this::authenticate);
+        } catch (GlobalException e) {
+            SecurityContextHolder.clearContext();
+        }
 
         filterChain.doFilter(request, response);
     }

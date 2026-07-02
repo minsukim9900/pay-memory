@@ -26,4 +26,15 @@ public class AuthController {
 
         return ResponseBody.success();
     }
+
+    @PostMapping("/logout")
+    public ResponseBody<Void> logout(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+
+        authService.logout(request, response);
+
+        return ResponseBody.success();
+    }
 }

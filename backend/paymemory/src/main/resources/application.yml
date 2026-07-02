@@ -69,3 +69,5 @@ jwt:
 
 cookie:
   domain: ${COOKIE_DOMAIN:paymemory.site}
+oauth2:
+  success-redirect-url: ${OAUTH2_SUCCESS_REDIRECT_URL:https://paymemory.site}

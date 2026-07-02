@@ -29,7 +29,7 @@ public class CookieProvider {
                 .from(accessTokenName, accessToken)
                 .httpOnly(true)
                 .secure(true)
-                .sameSite("None")
+                .sameSite("Lax")
                 .domain(cookieDomain)
                 .path("/")
                 .maxAge(accessTokenTtl)

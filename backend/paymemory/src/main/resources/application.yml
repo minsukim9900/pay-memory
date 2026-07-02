@@ -66,3 +66,6 @@ jwt:
   access-token-ttl: ${JWT_ACCESS_TOKEN_EXPIRE:3600000}
   refresh-token-name: ${JWT_REFRESH_TOKEN_NAME:REFRESH_TOKEN}
   refresh-token-ttl: ${JWT_REFRESH_TOKEN_EXPIRE:1209600000}
+
+cookie:
+  domain: ${COOKIE_DOMAIN:paymemory.site}

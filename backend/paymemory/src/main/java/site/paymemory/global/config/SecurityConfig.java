@@ -43,9 +43,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/oauth2/**",
                                 "/login/oauth2/**",
-                                "/users/reissue"
+                                "/users/reissue",
+                                "/users/logout"
                         ).permitAll()
-                        .requestMatchers("/users/logout").authenticated()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptionHandling -> exceptionHandling
@@ -58,7 +58,8 @@ public class SecurityConfig {
                         )
                         .successHandler(customOAuth2SuccessHandler)
                 )
-                .addFilterBefore(new JwtAuthenticationFilter(cookieProvider, tokenProvider),
+                .addFilterBefore(
+                        new JwtAuthenticationFilter(cookieProvider, tokenProvider),
                         UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

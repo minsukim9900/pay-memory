@@ -4,6 +4,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +13,10 @@ import java.util.Optional;
 
 @Component
 public class CookieProvider {
+
+    private static final String COOKIE_PATH = "/";
+    private static final String SAME_SITE = "Lax";
+    private static final int DELETE_COOKIE_MAX_AGE = 0;
 
     private final String accessTokenName;
     private final long accessTokenTtl;
@@ -36,32 +41,24 @@ public class CookieProvider {
 
     public void addAccessTokenCookie(HttpServletResponse response, String accessToken) {
 
-        ResponseCookie cookie = ResponseCookie
-                .from(accessTokenName, accessToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Lax")
-                .domain(cookieDomain)
-                .path("/")
-                .maxAge(accessTokenTtl)
-                .build();
+        ResponseCookie cookie = createCookie(
+                accessTokenName,
+                accessToken,
+                accessTokenTtl
+        );
 
-        response.addHeader("Set-Cookie", cookie.toString());
+        addSetCookieHeader(response, cookie);
     }
 
     public void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
 
-        ResponseCookie cookie = ResponseCookie
-                .from(refreshTokenName, refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Lax")
-                .domain(cookieDomain)
-                .path("/")
-                .maxAge(refreshTokenTtl)
-                .build();
+        ResponseCookie cookie = createCookie(
+                refreshTokenName,
+                refreshToken,
+                refreshTokenTtl
+        );
 
-        response.addHeader("Set-Cookie", cookie.toString());
+        addSetCookieHeader(response, cookie);
     }
 
     public Optional<String> getAccessToken(HttpServletRequest request) {
@@ -72,6 +69,20 @@ public class CookieProvider {
     public Optional<String> getRefreshToken(HttpServletRequest request) {
 
         return getCookieValue(request, refreshTokenName);
+    }
+
+    public void deleteAccessTokenCookie(HttpServletResponse response) {
+
+        ResponseCookie cookie = createDeleteCookie(accessTokenName);
+
+        addSetCookieHeader(response, cookie);
+    }
+
+    public void deleteRefreshTokenCookie(HttpServletResponse response) {
+
+        ResponseCookie cookie = createDeleteCookie(refreshTokenName);
+
+        addSetCookieHeader(response, cookie);
     }
 
     private Optional<String> getCookieValue(HttpServletRequest request, String cookieName) {
@@ -87,5 +98,35 @@ public class CookieProvider {
                 .filter(cookie -> cookieName.equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .findFirst();
+    }
+
+    private ResponseCookie createCookie(String cookieName, String value, long maxAge) {
+
+        return createCookieBuilder(cookieName, value)
+                .maxAge(maxAge)
+                .build();
+    }
+
+    private ResponseCookie createDeleteCookie(String cookieName) {
+
+        return createCookieBuilder(cookieName, "")
+                .maxAge(DELETE_COOKIE_MAX_AGE)
+                .build();
+    }
+
+    private ResponseCookie.ResponseCookieBuilder createCookieBuilder(String cookieName, String value) {
+
+        return ResponseCookie
+                .from(cookieName, value)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite(SAME_SITE)
+                .domain(cookieDomain)
+                .path(COOKIE_PATH);
+    }
+
+    private void addSetCookieHeader(HttpServletResponse response, ResponseCookie cookie) {
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

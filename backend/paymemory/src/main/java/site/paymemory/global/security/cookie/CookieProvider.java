@@ -64,7 +64,17 @@ public class CookieProvider {
         response.addHeader("Set-Cookie", cookie.toString());
     }
 
+    public Optional<String> getAccessToken(HttpServletRequest request) {
+
+        return getCookieValue(request, accessTokenName);
+    }
+
     public Optional<String> getRefreshToken(HttpServletRequest request) {
+
+        return getCookieValue(request, refreshTokenName);
+    }
+
+    private Optional<String> getCookieValue(HttpServletRequest request, String cookieName) {
 
         Cookie[] cookies = request.getCookies();
 
@@ -74,7 +84,7 @@ public class CookieProvider {
         }
 
         return Arrays.stream(cookies)
-                .filter(cookie -> refreshTokenName.equals(cookie.getName()))
+                .filter(cookie -> cookieName.equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .findFirst();
     }

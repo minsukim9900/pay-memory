@@ -1,9 +1,14 @@
 package site.paymemory.global.security.cookie;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.Optional;
 
 @Component
 public class CookieProvider {
@@ -57,5 +62,20 @@ public class CookieProvider {
                 .build();
 
         response.addHeader("Set-Cookie", cookie.toString());
+    }
+
+    public Optional<String> getRefreshToken(HttpServletRequest request) {
+
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies == null) {
+
+            return Optional.empty();
+        }
+
+        return Arrays.stream(cookies)
+                .filter(cookie -> refreshTokenName.equals(cookie.getName()))
+                .map(Cookie::getValue)
+                .findFirst();
     }
 }

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import site.paymemory.global.exception.GlobalException;
 import site.paymemory.global.security.cookie.CookieProvider;
+import site.paymemory.global.security.dto.TokenReissueResult;
 import site.paymemory.global.security.exception.TokenErrorCode;
 import site.paymemory.global.security.jwt.TokenProvider;
 import site.paymemory.global.security.provider.RefreshTokenProvider;
@@ -27,17 +28,44 @@ public class AuthService {
 
         String hashedRefreshToken = refreshTokenProvider.hashRefreshToken(refreshToken);
 
-        Long userId = refreshTokenRedisRepository.findUserIdByRefreshToken(hashedRefreshToken)
-                .orElseThrow(() -> new GlobalException(TokenErrorCode.INVALID_REFRESH_TOKEN));
+        refreshTokenRedisRepository.findUserIdAndDeleteRefreshToken(hashedRefreshToken)
+                .ifPresentOrElse(
+                        userId -> reissueNewToken(response, hashedRefreshToken, userId),
+                        () -> reissuePreviousResult(response, hashedRefreshToken)
+                );
+    }
+
+    private void reissueNewToken(
+            HttpServletResponse response,
+            String oldHashedRefreshToken,
+            Long userId
+    ) {
 
         String newAccessToken = tokenProvider.generateAccessToken(userId);
         String newRefreshToken = refreshTokenProvider.generateRefreshToken();
         String newHashedRefreshToken = refreshTokenProvider.hashRefreshToken(newRefreshToken);
 
-        refreshTokenRedisRepository.deleteRefreshToken(hashedRefreshToken);
         refreshTokenRedisRepository.saveRefreshToken(newHashedRefreshToken, userId);
+        refreshTokenRedisRepository.saveReissueResult(
+                oldHashedRefreshToken,
+                new TokenReissueResult(userId, newRefreshToken)
+        );
 
         cookieProvider.addAccessTokenCookie(response, newAccessToken);
         cookieProvider.addRefreshTokenCookie(response, newRefreshToken);
+    }
+
+    private void reissuePreviousResult(
+            HttpServletResponse response,
+            String oldHashedRefreshToken
+    ) {
+
+        TokenReissueResult tokenReissueResult = refreshTokenRedisRepository.findReissueResult(oldHashedRefreshToken)
+                .orElseThrow(() -> new GlobalException(TokenErrorCode.INVALID_REFRESH_TOKEN));
+
+        String accessToken = tokenProvider.generateAccessToken(tokenReissueResult.userId());
+
+        cookieProvider.addAccessTokenCookie(response, accessToken);
+        cookieProvider.addRefreshTokenCookie(response, tokenReissueResult.refreshToken());
     }
 }

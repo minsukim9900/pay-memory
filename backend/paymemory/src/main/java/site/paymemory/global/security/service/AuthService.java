@@ -55,6 +55,16 @@ public class AuthService {
         cookieProvider.addRefreshTokenCookie(response, newRefreshToken);
     }
 
+    public void logout(HttpServletRequest request, HttpServletResponse response) {
+
+        cookieProvider.getRefreshToken(request)
+                .map(refreshTokenProvider::hashRefreshToken)
+                .ifPresent(refreshTokenRedisRepository::deleteRefreshToken);
+
+        cookieProvider.deleteAccessTokenCookie(response);
+        cookieProvider.deleteRefreshTokenCookie(response);
+    }
+
     private void reissuePreviousResult(
             HttpServletResponse response,
             String oldHashedRefreshToken

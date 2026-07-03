@@ -63,6 +63,7 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+      - "9292:9292"
     environment:
       SPRING_PROFILES_ACTIVE: local
 
@@ -74,3 +75,12 @@ services:
       SPRING_DATA_REDIS_PORT: 6379
 
       SPRING_DATA_MONGODB_URI: mongodb://admin:mongodb_password@mongodb:27017/paymemory?authSource=admin
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: paymemory-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml

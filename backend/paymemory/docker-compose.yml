@@ -100,7 +100,7 @@ services:
     depends_on:
       - prometheus
     ports:
-      - "3000:3000"
+      - "3300:3000"
     volumes:
       - grafana-data:/var/lib/grafana
 

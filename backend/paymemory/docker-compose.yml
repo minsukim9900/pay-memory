@@ -63,14 +63,46 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+      - "9292:9292"
+    volumes:
+      - ./runtime/application.yml:/app/application.yml
     environment:
-      SPRING_PROFILES_ACTIVE: local
+      SPRING_CONFIG_LOCATION: file:/app/application.yml
 
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      KAKAO_CLIENT_ID: ${KAKAO_CLIENT_ID}
+      KAKAO_CLIENT_SECRET: ${KAKAO_CLIENT_SECRET}
+      KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:8080/login/oauth2/code/kakao}
 
-      SPRING_DATA_REDIS_HOST: redis
-      SPRING_DATA_REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-local-jwt-secret-key-local-jwt-secret-key}
+      JWT_ACCESS_TOKEN_NAME: ${JWT_ACCESS_TOKEN_NAME:-ACCESS_TOKEN}
+      JWT_ACCESS_TOKEN_EXPIRE: ${JWT_ACCESS_TOKEN_EXPIRE:-3600}
+      JWT_REFRESH_TOKEN_NAME: ${JWT_REFRESH_TOKEN_NAME:-REFRESH_TOKEN}
+      JWT_REFRESH_TOKEN_EXPIRE: ${JWT_REFRESH_TOKEN_EXPIRE:-1209600}
 
-      SPRING_DATA_MONGODB_URI: mongodb://admin:mongodb_password@mongodb:27017/paymemory?authSource=admin
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-localhost}
+      OAUTH2_SUCCESS_REDIRECT_URL: ${OAUTH2_SUCCESS_REDIRECT_URL:-http://localhost:8080}
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: paymemory-prometheus
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: paymemory-grafana
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+    ports:
+      - "3300:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  grafana-data:

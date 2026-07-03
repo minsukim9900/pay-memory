@@ -71,3 +71,11 @@ cookie:
   domain: ${COOKIE_DOMAIN:paymemory.site}
 oauth2:
   success-redirect-url: ${OAUTH2_SUCCESS_REDIRECT_URL:https://paymemory.site}
+
+management:
+  server:
+    port: 9292
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus

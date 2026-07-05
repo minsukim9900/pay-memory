@@ -5,7 +5,10 @@ import site.paymemory.domain.user.entity.User;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<User, Long>, UserRepositoryPort {
 
     Optional<User> findBySocialId(String socialId);
+
+    @Override
+    Optional<User> findByIdAndDeletedAtIsNull(Long id);
 }

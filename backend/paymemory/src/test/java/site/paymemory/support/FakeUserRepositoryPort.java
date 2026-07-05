@@ -1,7 +1,6 @@
 package site.paymemory.support;
 
 import java.lang.reflect.Field;
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -24,7 +23,7 @@ public class FakeUserRepositoryPort implements UserRepositoryPort {
         User user = users.get(userId);
 
         if (user != null) {
-            setField(user, "deletedAt", Instant.now());
+            user.delete();
         }
     }
 

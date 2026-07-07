@@ -286,4 +286,25 @@ class UserTest {
             assertThat(user.getDeletedAt()).isNotNull();
         }
     }
+
+    @Nested
+    @DisplayName("사용자 복구")
+    class RestoreUser {
+
+        @Test
+        @DisplayName("사용자를 복구하면 deletedAt이 null이 된다")
+        void restoreUserSuccessfully() {
+            // given
+            User user = createUser();
+            user.delete();
+
+            assertThat(user.getDeletedAt()).isNotNull();
+
+            // when
+            user.restore();
+
+            // then
+            assertThat(user.getDeletedAt()).isNull();
+        }
+    }
 }

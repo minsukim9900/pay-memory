@@ -45,6 +45,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private User updateUserProfile(User user, KakaoOAuth2UserInfo userInfo) {
 
+        if (user.getDeletedAt() != null) {
+            user.restore();
+        }
+
         user.updateProfile(
                 userInfo.getNickname(),
                 userInfo.getProfileImageUrl()

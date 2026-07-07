@@ -22,4 +22,13 @@ public class UserService {
 
         return UserInfoResponse.from(user);
     }
+
+    @Transactional
+    public void deleteMe(Long userId) {
+
+        User user = userRepositoryPort.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new GlobalException(UserErrorCode.USER_NOT_FOUND));
+
+        user.delete();
+    }
 }

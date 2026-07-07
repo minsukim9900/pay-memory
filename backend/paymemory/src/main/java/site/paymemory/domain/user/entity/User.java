@@ -69,6 +69,10 @@ public class User extends BaseTimeEntity {
         this.deletedAt = Instant.now();
     }
 
+    public void restore() {
+        this.deletedAt = null;
+    }
+
     private void validateRequiredFields(
             String socialId,
             String email,

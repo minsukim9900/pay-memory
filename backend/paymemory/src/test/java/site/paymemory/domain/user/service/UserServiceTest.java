@@ -82,4 +82,60 @@ class UserServiceTest {
             assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
         }
     }
+
+    @Nested
+    @DisplayName("회원 탈퇴")
+    class DeleteMe {
+
+        @Test
+        @DisplayName("사용자가 존재하면 회원 탈퇴 처리한다")
+        void givenExistingUserId_whenDeleteMe_thenDeletesUser() {
+            // given
+            User user = createUser();
+
+            userRepositoryPort.save(USER_ID, user);
+
+            // when
+            userService.deleteMe(USER_ID);
+
+            // then
+            assertThat(user.getDeletedAt()).isNotNull();
+        }
+
+        @Test
+        @DisplayName("사용자가 존재하지 않으면 예외가 발생한다")
+        void givenNotExistingUserId_whenDeleteMe_thenThrowsException() {
+            // when
+            Throwable thrown = catchThrowable(() -> userService.deleteMe(USER_ID));
+
+            // then
+            assertThat(thrown)
+                    .isInstanceOf(GlobalException.class);
+
+            GlobalException exception = (GlobalException) thrown;
+
+            assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+        }
+
+        @Test
+        @DisplayName("이미 탈퇴한 사용자는 예외가 발생한다")
+        void givenDeletedUserId_whenDeleteMe_thenThrowsException() {
+            // given
+            User user = createUser();
+
+            userRepositoryPort.save(USER_ID, user);
+            userRepositoryPort.delete(USER_ID);
+
+            // when
+            Throwable thrown = catchThrowable(() -> userService.deleteMe(USER_ID));
+
+            // then
+            assertThat(thrown)
+                    .isInstanceOf(GlobalException.class);
+
+            GlobalException exception = (GlobalException) thrown;
+
+            assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.USER_NOT_FOUND);
+        }
+    }
 }

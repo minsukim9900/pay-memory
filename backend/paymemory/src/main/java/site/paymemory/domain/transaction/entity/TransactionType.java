@@ -10,7 +10,8 @@ public enum TransactionType {
     PAYMENT("결제"),
     CHARGE("충전"),
     TRANSFER("이체"),
-    INCOME("수입");
+    INCOME("수입"),
+    UNCLASSIFIED("미분류");
 
     private final String label;
 }

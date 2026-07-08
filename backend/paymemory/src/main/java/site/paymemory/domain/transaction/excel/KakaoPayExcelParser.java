@@ -40,7 +40,10 @@ public class KakaoPayExcelParser {
     private static final String STATUS_HEADER_NAME = "상태";
 
     private static final ZoneId KOREA_ZONE_ID = ZoneId.of("Asia/Seoul");
-    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final List<DateTimeFormatter> DATE_TIME_FORMATTERS = List.of(
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"),
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    );
 
     private final DataFormatter dataFormatter = new DataFormatter();
 
@@ -253,14 +256,21 @@ public class KakaoPayExcelParser {
 
     private Instant parseTransactionAt(String value) {
 
-        LocalDateTime localDateTime = LocalDateTime.parse(
-                value,
-                DATE_TIME_FORMATTER
-        );
+        for (DateTimeFormatter dateTimeFormatter : DATE_TIME_FORMATTERS) {
+            try {
+                LocalDateTime localDateTime = LocalDateTime.parse(
+                        value,
+                        dateTimeFormatter
+                );
 
-        return localDateTime
-                .atZone(KOREA_ZONE_ID)
-                .toInstant();
+                return localDateTime
+                        .atZone(KOREA_ZONE_ID)
+                        .toInstant();
+            } catch (RuntimeException ignored) {
+            }
+        }
+
+        throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_INVALID_ROW);
     }
 
     private long parseAmount(String value) {
@@ -268,6 +278,10 @@ public class KakaoPayExcelParser {
         String normalizedValue = value
                 .replace(",", "")
                 .replace("원", "")
+                .replace("₩", "")
+                .replace("+", "")
+                .replace("−", "-")
+                .replaceAll("\\s+", "")
                 .trim();
 
         return Long.parseLong(normalizedValue);

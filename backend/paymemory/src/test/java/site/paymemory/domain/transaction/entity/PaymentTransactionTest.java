@@ -42,7 +42,7 @@ class PaymentTransactionTest {
     private static final String REQUIRED_TRANSACTION_AT_MESSAGE = "거래일시는 필수입니다.";
     private static final String REQUIRED_TRANSACTION_TYPE_MESSAGE = "거래 유형은 필수입니다.";
     private static final String REQUIRED_MERCHANT_NAME_MESSAGE = "사용처는 필수입니다.";
-    private static final String INVALID_AMOUNT_MESSAGE = "금액은 0보다 커야 합니다.";
+    private static final String INVALID_AMOUNT_MESSAGE = "금액은 0일 수 없습니다.";
 
     @Nested
     @DisplayName("거래내역 생성")
@@ -183,20 +183,16 @@ class PaymentTransactionTest {
         }
 
         @Test
-        @DisplayName("amount가 음수이면 예외가 발생한다.")
-        void throwExceptionWhenAmountIsNegative() throws Exception {
+        @DisplayName("amount가 음수이면 거래내역 객체를 생성한다.")
+        void createPaymentTransactionWhenAmountIsNegative() throws Exception {
             //given
-            long amount = -1L;
+            long amount = -3600L;
 
             //when
-            Throwable thrown = catchThrowable(() ->
-                    createPaymentTransactionWithAmount(amount)
-            );
+            PaymentTransaction paymentTransaction = createPaymentTransactionWithAmount(amount);
 
             //then
-            assertThat(thrown)
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessage(INVALID_AMOUNT_MESSAGE);
+            assertThat(paymentTransaction.getAmount()).isEqualTo(amount);
         }
 
         @Test

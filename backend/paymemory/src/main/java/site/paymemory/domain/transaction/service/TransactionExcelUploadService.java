@@ -35,7 +35,10 @@ public class TransactionExcelUploadService {
     public UploadTransactionExcelResponse upload(UploadTransactionExcelRequest request) {
 
         User user = findUser(request.userId());
-        List<KakaoPayTransactionExcelRow> rows = kakaoPayExcelParser.parse(request.file());
+        List<KakaoPayTransactionExcelRow> rows = kakaoPayExcelParser.parse(
+                request.file(),
+                request.filePassword()
+        );
         TransactionCategory transactionCategory = findOrCreateUncategorizedCategory();
 
         int savedCount = 0;

@@ -2,6 +2,7 @@ package site.paymemory.domain.transaction.excel;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.GeneralSecurityException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -9,6 +10,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.poi.poifs.crypt.Decryptor;
+import org.apache.poi.poifs.crypt.EncryptionInfo;
+import org.apache.poi.poifs.filesystem.FileMagic;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -39,23 +44,79 @@ public class KakaoPayExcelParser {
 
     private final DataFormatter dataFormatter = new DataFormatter();
 
-    public List<KakaoPayTransactionExcelRow> parse(MultipartFile file) {
+    public List<KakaoPayTransactionExcelRow> parse(
+            MultipartFile file,
+            String filePassword
+    ) {
 
         validateFile(file);
 
-        try (
-                InputStream inputStream = file.getInputStream();
-                Workbook workbook = new XSSFWorkbook(inputStream)
-        ) {
-            Sheet sheet = workbook.getSheetAt(0);
-            validateSheet(sheet);
+        try (InputStream inputStream = FileMagic.prepareToCheckMagic(file.getInputStream())) {
+            FileMagic fileMagic = FileMagic.valueOf(inputStream);
 
-            KakaoPayExcelHeader header = analyzeHeader(sheet.getRow(HEADER_ROW_INDEX));
+            if (fileMagic == FileMagic.OLE2) {
+                return parseEncryptedWorkbook(inputStream, filePassword);
+            }
 
-            return parseRows(sheet, header);
+            if (fileMagic == FileMagic.OOXML) {
+                return parsePlainWorkbook(inputStream);
+            }
+
+            throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_PARSE_FAILED);
         } catch (IOException e) {
             throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_PARSE_FAILED);
         }
+    }
+
+    private List<KakaoPayTransactionExcelRow> parsePlainWorkbook(InputStream inputStream) {
+
+        try (Workbook workbook = new XSSFWorkbook(inputStream)) {
+            return parseWorkbook(workbook);
+        } catch (IOException e) {
+            throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_PARSE_FAILED);
+        }
+    }
+
+    private List<KakaoPayTransactionExcelRow> parseEncryptedWorkbook(
+            InputStream inputStream,
+            String filePassword
+    ) {
+
+        if (filePassword == null || filePassword.isBlank()) {
+            throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_PASSWORD_REQUIRED);
+        }
+
+        try (POIFSFileSystem fileSystem = new POIFSFileSystem(inputStream)) {
+            EncryptionInfo encryptionInfo = new EncryptionInfo(fileSystem);
+            Decryptor decryptor = Decryptor.getInstance(encryptionInfo);
+
+            if (!decryptor.verifyPassword(filePassword)) {
+                throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_INVALID_PASSWORD);
+            }
+
+            try (
+                    InputStream dataStream = decryptor.getDataStream(fileSystem);
+                    Workbook workbook = new XSSFWorkbook(dataStream)
+            ) {
+                return parseWorkbook(workbook);
+            }
+        } catch (GlobalException e) {
+            throw e;
+        } catch (GeneralSecurityException e) {
+            throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_INVALID_PASSWORD);
+        } catch (IOException e) {
+            throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_PARSE_FAILED);
+        }
+    }
+
+    private List<KakaoPayTransactionExcelRow> parseWorkbook(Workbook workbook) {
+
+        Sheet sheet = workbook.getSheetAt(0);
+        validateSheet(sheet);
+
+        KakaoPayExcelHeader header = analyzeHeader(sheet.getRow(HEADER_ROW_INDEX));
+
+        return parseRows(sheet, header);
     }
 
     private void validateFile(MultipartFile file) {

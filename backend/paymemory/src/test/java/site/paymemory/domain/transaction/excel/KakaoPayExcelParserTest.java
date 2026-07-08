@@ -42,7 +42,7 @@ class KakaoPayExcelParserTest {
             );
 
             // when
-            List<KakaoPayTransactionExcelRow> result = kakaoPayExcelParser.parse(file);
+            List<KakaoPayTransactionExcelRow> result = kakaoPayExcelParser.parse(file, null);
 
             // then
             assertThat(result).hasSize(2);
@@ -74,7 +74,7 @@ class KakaoPayExcelParserTest {
             );
 
             // when
-            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file));
+            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file, null));
 
             // then
             assertThat(thrown)
@@ -99,7 +99,7 @@ class KakaoPayExcelParserTest {
             );
 
             // when
-            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file));
+            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file, null));
 
             // then
             assertThat(thrown)
@@ -124,7 +124,7 @@ class KakaoPayExcelParserTest {
             );
 
             // when
-            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file));
+            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file, null));
 
             // then
             assertThat(thrown)
@@ -149,7 +149,7 @@ class KakaoPayExcelParserTest {
             );
 
             // when
-            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file));
+            Throwable thrown = catchThrowable(() -> kakaoPayExcelParser.parse(file, null));
 
             // then
             assertThat(thrown)

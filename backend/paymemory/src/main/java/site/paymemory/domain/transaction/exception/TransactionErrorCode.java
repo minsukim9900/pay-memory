@@ -55,12 +55,6 @@ public enum TransactionErrorCode implements ErrorCode {
             HttpStatus.BAD_REQUEST,
             3007,
             "엑셀 파일에 올바르지 않은 거래내역 행이 존재합니다."
-    ),
-
-    TRANSACTION_TYPE_NOT_SUPPORTED(
-            HttpStatus.BAD_REQUEST,
-            3008,
-            "지원하지 않는 거래 유형입니다."
     );
 
     private final HttpStatus status;

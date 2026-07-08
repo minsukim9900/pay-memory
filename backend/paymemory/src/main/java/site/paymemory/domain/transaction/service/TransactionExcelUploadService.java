@@ -84,7 +84,7 @@ public class TransactionExcelUploadService {
             KakaoPayTransactionExcelRow row
     ) {
 
-        return paymentTransactionRepositoryPort.existsDuplicate(
+        return paymentTransactionRepositoryPort.existsByUserIdAndTransactionAtAndMerchantNameAndAmount(
                 userId,
                 row.transactionAt(),
                 row.merchantName(),

@@ -23,20 +23,31 @@ public class FakePaymentTransactionRepositoryPort implements PaymentTransactionR
     }
 
     @Override
-    public boolean existsByUserIdAndTransactionAtAndMerchantNameAndAmount(
+    public <S extends PaymentTransaction> List<S> saveAll(Iterable<S> paymentTransactions) {
+
+        List<S> savedPaymentTransactions = new ArrayList<>();
+
+        for (S paymentTransaction : paymentTransactions) {
+            setField(paymentTransaction, "id", sequence++);
+            this.paymentTransactions.add(paymentTransaction);
+            savedPaymentTransactions.add(paymentTransaction);
+        }
+
+        return savedPaymentTransactions;
+    }
+
+    @Override
+    public List<PaymentTransaction> findByUserIdAndTransactionAtBetween(
             Long userId,
-            Instant transactionAt,
-            String merchantName,
-            long amount
+            Instant startTransactionAt,
+            Instant endTransactionAt
     ) {
 
         return paymentTransactions.stream()
-                .anyMatch(paymentTransaction ->
-                        paymentTransaction.getUser().getId().equals(userId)
-                                && paymentTransaction.getTransactionAt().equals(transactionAt)
-                                && paymentTransaction.getMerchantName().equals(merchantName)
-                                && paymentTransaction.getAmount() == amount
-                );
+                .filter(paymentTransaction -> paymentTransaction.getUser().getId().equals(userId))
+                .filter(paymentTransaction -> !paymentTransaction.getTransactionAt().isBefore(startTransactionAt))
+                .filter(paymentTransaction -> !paymentTransaction.getTransactionAt().isAfter(endTransactionAt))
+                .toList();
     }
 
     public List<PaymentTransaction> findAll() {

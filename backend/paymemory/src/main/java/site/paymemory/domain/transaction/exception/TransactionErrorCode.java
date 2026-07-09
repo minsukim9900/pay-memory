@@ -55,6 +55,12 @@ public enum TransactionErrorCode implements ErrorCode {
             HttpStatus.BAD_REQUEST,
             3007,
             "엑셀 파일에 올바르지 않은 거래내역 행이 존재합니다."
+    ),
+
+    TRANSACTION_CATEGORY_NOT_FOUND(
+            HttpStatus.NOT_FOUND,
+            3008,
+            "거래내역 카테고리를 찾을 수 없습니다."
     );
 
     private final HttpStatus status;

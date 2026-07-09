@@ -1,17 +1,22 @@
 package site.paymemory.domain.transaction.service;
 
+import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import site.paymemory.domain.transaction.dto.excel.KakaoPayTransactionDuplicateKey;
 import site.paymemory.domain.transaction.dto.excel.KakaoPayTransactionExcelRow;
 import site.paymemory.domain.transaction.dto.request.UploadTransactionExcelRequest;
 import site.paymemory.domain.transaction.dto.response.UploadTransactionExcelResponse;
 import site.paymemory.domain.transaction.entity.PaymentTransaction;
 import site.paymemory.domain.transaction.entity.TransactionCategory;
 import site.paymemory.domain.transaction.entity.TransactionType;
+import site.paymemory.domain.transaction.exception.TransactionErrorCode;
 import site.paymemory.domain.transaction.excel.KakaoPayExcelParser;
 import site.paymemory.domain.transaction.repository.PaymentTransactionRepositoryPort;
 import site.paymemory.domain.transaction.repository.TransactionCategoryRepositoryPort;
@@ -39,26 +44,31 @@ public class TransactionExcelUploadService {
                 request.file(),
                 request.filePassword()
         );
-        TransactionCategory transactionCategory = findOrCreateUncategorizedCategory();
+        TransactionCategory transactionCategory = findUncategorizedCategory();
 
-        int savedCount = 0;
-        int duplicatedCount = 0;
+        Set<KakaoPayTransactionDuplicateKey> existingKeys = findExistingKeys(
+                user.getId(),
+                rows
+        );
 
-        for (KakaoPayTransactionExcelRow row : rows) {
-            if (isDuplicated(user.getId(), row)) {
-                duplicatedCount++;
-                continue;
-            }
+        Set<KakaoPayTransactionDuplicateKey> processedKeys = new HashSet<>();
+        List<PaymentTransaction> paymentTransactions = rows.stream()
+                .filter(row -> isNotDuplicated(
+                        row,
+                        existingKeys,
+                        processedKeys
+                ))
+                .map(row -> createPaymentTransaction(
+                        user,
+                        transactionCategory,
+                        row
+                ))
+                .toList();
 
-            PaymentTransaction paymentTransaction = createPaymentTransaction(
-                    user,
-                    transactionCategory,
-                    row
-            );
+        paymentTransactionRepositoryPort.saveAll(paymentTransactions);
 
-            paymentTransactionRepositoryPort.save(paymentTransaction);
-            savedCount++;
-        }
+        int savedCount = paymentTransactions.size();
+        int duplicatedCount = rows.size() - savedCount;
 
         return UploadTransactionExcelResponse.of(
                 rows.size(),
@@ -74,25 +84,71 @@ public class TransactionExcelUploadService {
                 .orElseThrow(() -> new GlobalException(UserErrorCode.USER_NOT_FOUND));
     }
 
-    private TransactionCategory findOrCreateUncategorizedCategory() {
+    private TransactionCategory findUncategorizedCategory() {
 
         return transactionCategoryRepositoryPort.findByName(UNCATEGORIZED_CATEGORY_NAME)
-                .orElseGet(() -> transactionCategoryRepositoryPort.save(
-                        TransactionCategory.fromName(UNCATEGORIZED_CATEGORY_NAME)
-                ));
+                .orElseThrow(() -> new GlobalException(TransactionErrorCode.TRANSACTION_CATEGORY_NOT_FOUND));
     }
 
-    private boolean isDuplicated(
+    private Set<KakaoPayTransactionDuplicateKey> findExistingKeys(
             Long userId,
-            KakaoPayTransactionExcelRow row
+            List<KakaoPayTransactionExcelRow> rows
     ) {
 
-        return paymentTransactionRepositoryPort.existsByUserIdAndTransactionAtAndMerchantNameAndAmount(
-                userId,
-                row.transactionAt(),
-                row.merchantName(),
-                row.amount()
-        );
+        Instant startTransactionAt = findStartTransactionAt(rows);
+        Instant endTransactionAt = findEndTransactionAt(rows);
+
+        List<PaymentTransaction> paymentTransactions =
+                paymentTransactionRepositoryPort.findByUserIdAndTransactionAtBetween(
+                        userId,
+                        startTransactionAt,
+                        endTransactionAt
+                );
+
+        Set<KakaoPayTransactionDuplicateKey> existingKeys = new HashSet<>();
+
+        for (PaymentTransaction paymentTransaction : paymentTransactions) {
+            existingKeys.add(KakaoPayTransactionDuplicateKey.from(paymentTransaction));
+        }
+
+        return existingKeys;
+    }
+
+    private Instant findStartTransactionAt(List<KakaoPayTransactionExcelRow> rows) {
+
+        return rows.stream()
+                .map(KakaoPayTransactionExcelRow::transactionAt)
+                .min(Instant::compareTo)
+                .orElseThrow(() -> new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_EMPTY));
+    }
+
+    private Instant findEndTransactionAt(List<KakaoPayTransactionExcelRow> rows) {
+
+        return rows.stream()
+                .map(KakaoPayTransactionExcelRow::transactionAt)
+                .max(Instant::compareTo)
+                .orElseThrow(() -> new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_EMPTY));
+    }
+
+    private boolean isNotDuplicated(
+            KakaoPayTransactionExcelRow row,
+            Set<KakaoPayTransactionDuplicateKey> existingKeys,
+            Set<KakaoPayTransactionDuplicateKey> processedKeys
+    ) {
+
+        KakaoPayTransactionDuplicateKey key = KakaoPayTransactionDuplicateKey.from(row);
+
+        if (existingKeys.contains(key)) {
+            return false;
+        }
+
+        if (processedKeys.contains(key)) {
+            return false;
+        }
+
+        processedKeys.add(key);
+
+        return true;
     }
 
     private PaymentTransaction createPaymentTransaction(

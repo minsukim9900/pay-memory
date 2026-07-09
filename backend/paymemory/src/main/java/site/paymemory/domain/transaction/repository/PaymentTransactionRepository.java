@@ -1,8 +1,11 @@
 package site.paymemory.domain.transaction.repository;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import site.paymemory.domain.transaction.entity.PaymentTransaction;
 
@@ -11,10 +14,15 @@ public interface PaymentTransactionRepository extends
         PaymentTransactionRepositoryPort {
 
     @Override
-    boolean existsByUserIdAndTransactionAtAndMerchantNameAndAmount(
-            Long userId,
-            Instant transactionAt,
-            String merchantName,
-            long amount
+    @Query("""
+            SELECT paymentTransaction
+            FROM PaymentTransaction paymentTransaction
+            WHERE paymentTransaction.user.id = :userId
+              AND paymentTransaction.transactionAt BETWEEN :startTransactionAt AND :endTransactionAt
+            """)
+    List<PaymentTransaction> findByUserIdAndTransactionAtBetween(
+            @Param("userId") Long userId,
+            @Param("startTransactionAt") Instant startTransactionAt,
+            @Param("endTransactionAt") Instant endTransactionAt
     );
 }

@@ -1,0 +1,15 @@
+package site.paymemory.domain.transaction.repository;
+
+import java.time.Instant;
+import java.util.List;
+
+import site.paymemory.domain.transaction.entity.PaymentTransaction;
+
+public interface PaymentTransactionCustomRepository {
+
+    List<PaymentTransaction> findByUserIdAndTransactionAtBetween(
+            Long userId,
+            Instant startTransactionAt,
+            Instant endTransactionAt
+    );
+}

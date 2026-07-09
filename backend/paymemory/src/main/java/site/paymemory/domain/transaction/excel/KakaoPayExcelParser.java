@@ -9,6 +9,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.poi.poifs.crypt.Decryptor;
 import org.apache.poi.poifs.crypt.EncryptionInfo;
@@ -54,7 +55,10 @@ public class KakaoPayExcelParser {
 
         validateFile(file);
 
-        try (InputStream inputStream = FileMagic.prepareToCheckMagic(file.getInputStream())) {
+        try (
+                InputStream originalInputStream = file.getInputStream();
+                InputStream inputStream = FileMagic.prepareToCheckMagic(originalInputStream)
+        ) {
             FileMagic fileMagic = FileMagic.valueOf(inputStream);
 
             if (fileMagic == FileMagic.OLE2) {
@@ -130,7 +134,10 @@ public class KakaoPayExcelParser {
 
         String originalFilename = file.getOriginalFilename();
 
-        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(EXCEL_EXTENSION)) {
+        if (
+                originalFilename == null
+                        || !originalFilename.toLowerCase(Locale.ROOT).endsWith(EXCEL_EXTENSION)
+        ) {
             throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_INVALID_FILE_EXTENSION);
         }
     }

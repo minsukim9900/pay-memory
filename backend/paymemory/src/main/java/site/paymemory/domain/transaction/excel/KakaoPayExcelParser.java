@@ -130,7 +130,7 @@ public class KakaoPayExcelParser {
 
         String originalFilename = file.getOriginalFilename();
 
-        if (originalFilename == null || !originalFilename.endsWith(EXCEL_EXTENSION)) {
+        if (originalFilename == null || !originalFilename.toLowerCase().endsWith(EXCEL_EXTENSION)) {
             throw new GlobalException(TransactionErrorCode.TRANSACTION_EXCEL_INVALID_FILE_EXTENSION);
         }
     }
